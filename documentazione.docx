@@ -1,0 +1,87 @@
+Documentazione per l'Applicazione di Registrazione Orario e Agenda Scolastica - applicazione desktop/mobile
+
+Panoramica generale del progetto:
+    L'applicazione consente agli utenti, registrati e successivamente loggati alla propria area riservata, di gestire i propri impegni 
+    e l'orario scolastico.
+
+Interfaccia di:
+    - login/registrazione/recupero password
+    - gestione dell'orario scolastico (Pagina iniziale)
+    - gestione degli eventi (Pagina secondaria)
+    - gestione della propria utenza (Ultima pagina)
+
+Dettagli interfaccia e funzionalità:
+ 1) Login: semplice form in cui l'utente avrà modo di inserire le proprie credenziali. 
+           Nel caso in cui l'utente avesse deciso di recuperare la password o fosse la prima volta in cui fa login, dopo aver inserito la password,
+           verrà chiesto di inserire la vecchia password (temporanea, ricevuta via mail) e la nuova password.
+           Sarà inoltre necessario implementare un sistema di blocco dell'utenza per evitare attacchi esterni, impostando un limite di tentativi di login.
+ 2) Registrazione: form in cui il futuro utente avrà modo di inserire le proprie generalità (nome, cognome, email). Una volta completata la registrazione
+                   riceverà tramite email la password temporanea e i dati inseriti in fase di login.
+ 3) Recupero password: form in cui l'utente inserirà la propria email per ricevere la nuova password temporanea.
+ 4) Orario scolastico: la pagina mostrerà una tabella a righe e colonne fisse ( 9 righe + 1 di intestazione e 5 colonne + 1 di orario) e l'utente 
+                       avrà la possibilità di modificare il valore al suo interno.
+ 5) Eventi: la pagina mostrerà un elenco di eventi. Ogni evento mostrerà il titolo, una parte della descrizione e l'eventuale data di scadenza, 
+            sarà inoltre possibile visualizzarli completamente, modificarli, eliminarli e ricercarli tramite filtro (titolo, descrizione).
+ 6) Gestione della propria utenza: la pagina si presenterà attraverso un interfaccia semplice ma completa in cui l'utente potrà modificare e visualizzare quante volte 
+                                    vuole i dati della propria utenza inserita in fase di registrazione.
+
+Librerie usate:
+ - Bootstrap e css per la grafica.
+ - Electron per trasformare l'applicazione web in applicazione desktop (sia per Microsoft che per MacOS)
+ - Cordova/capacitor/altro per trasformare l'applicazione web in  un applicazione mobile (sia per android che per iOS)
+ 
+ER + sql:
+Vedi UNI.drawio.png.
+
+** 
+    Lastlogin nella tabella utente è un boolean che ha come valore false se si è appena registrato o ha ricevuto una mail con la password temporanea
+    altrimenti è sempre vera.
+**
+
+CREATE TABLE utente (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    nome VARCHAR(255) NOT NULL,
+    cognome VARCHAR(255) NOT NULL,
+    lastLogin BOOLEAN DEFAULT FALSE
+);
+
+CREATE TABLE giorno (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    nome VARCHAR(255) NOT NULL,
+    idUtente INT,
+    FOREIGN KEY (idUtente) REFERENCES utente(id) 
+        ON DELETE CASCADE 
+        ON UPDATE CASCADE
+);
+
+CREATE TABLE ora (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    valore VARCHAR(255) NOT NULL,
+    idGiorno INT,
+    FOREIGN KEY (idGiorno) REFERENCES giorno(id) 
+        ON DELETE CASCADE 
+        ON UPDATE CASCADE
+);
+
+CREATE TABLE evento (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    titolo VARCHAR(255) NOT NULL,
+    descrizione VARCHAR(255) NOT NULL,
+    dataScadenza DATETIME NOT NULL,
+    dataInserimento TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    idUtente INT,
+    FOREIGN KEY (idUtente) REFERENCES utente(id) 
+        ON DELETE CASCADE 
+        ON UPDATE CASCADE
+);
+
+Servizi esterni usati:
+ Non possedendo un server web abbastanza veloce sarà necessario utilizzare servizi forniti da esterni, per questo sarà necessario criptare i dati 
+ sensibili salvati nel database.
+ - Dbeaver: per avere un database MYSQL da 5 GB.
+ - Netlify: per avere delle funzioni (Lambda function) che comunicano tra db e applicazione frontend.
+ - Git e github: per lavorare in simultanea e tenere traccia dei progressi ed eventualmente fare rollback
+
+Link repository github: 
